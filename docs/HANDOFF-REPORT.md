@@ -120,6 +120,20 @@
   запуск авто-закрытия из хоста.
 - **Фазы F–H** — UI на MAUI (список локаций/drawer, диалоги открытия,
   файлменеджер, экраны настроек).
+- **Фаза F (доводка) + Avalonia-бэкенд** · см. `PHASE-F2-AVALONIA-REPORT.md`.
+  Закрыты 3 из 4 «остатков» Phase F: (1) реальный protection-key
+  `SecureStoreProtectionKeyProvider` поверх `SecureStorage` (Keystore/Keychain/DPAPI)
+  с деградацией на insecure-fallback; (2) настоящий Android foreground-service
+  `EdsForegroundService` + `IForegroundOperationService` (paste/import обёрнуты);
+  (3) общий EXIF-ридер `Eds.Core/App/ImageMetadataReader.cs` (MetadataExtractor,
+  из расшифрованного потока) — база для image-viewer. Интегрирован **Avalonia MAUI
+  Backend** (рендеринг существующего MAUI через Avalonia → **Linux** и drawn
+  Windows/macOS): opt-in TFM `net11.0` (`-p:EnableAvalonia=true`),
+  `Avalonia.Controls.Maui[.Desktop/.Compatibility/.Essentials]`, `.UseAvaloniaApp()`
+  под `#if AVALONIA_DESKTOP`. Всё не собрано здесь (нет .NET SDK); Avalonia-бэкенд —
+  **preview** (нужен .NET 11 preview + MAUI 11 workload, версию запинить).
+  Остаётся: multi-select / rich-progress UI, экраны image-viewer на каждой голове,
+  и проверка на живой сборке (Essentials/пикеры в preview могут быть частичными).
 - **Фаза I** — опциональное/платформенное (exFAT, SAF-провайдеры, виджеты).
 - **Фаза G (параллельная)** — полнота форматов · **ЧАСТИЧНО ЗАКРЫТА**, см.
   `PHASE-G-REPORT.md`: keyfiles (`KeyfileMixer` — не-reflected CRC32!), VeraCrypt PIM
@@ -136,11 +150,23 @@
 Кросс-задачи идут сквозь все фазы и сейчас **не закрыты**. Это главные источники
 риска на будущее.
 
-### K1 — Корпус совместимости данных (КРИТИЧНО, P1)
-**Суть.** Все текущие проверки крипто/ФС — это **round-trip**: код сам пишет и сам
-читает. Это доказывает **внутреннюю** согласованность, но **НЕ** interop с реальными
-данными. Байт-совместимость с томами, созданными настоящими утилитами, **не
-подтверждена ни для одного формата**.
+### K1 — Корпус совместимости данных (P1) — ✅ ЧАСТИЧНО ЗАКРЫТО
+**Обновление.** Interop **подтверждён для EncFS и LUKS1 (AES)** реальными настольными
+утилитами (`encfs` 1.9.5, `cryptsetup` 2.7.0) — см. `docs/PHASE-K1-REPORT.md`.
+Добавлены: реальные эталонные тома (`tests/Eds.Core.Tests/fixtures/interop/`),
+C#-тесты (`EncFsRealInteropTests`, `LuksRealInteropTests`) и независимый
+Python+native оракул (`tests/interop-verification/`, воспроизводим без .NET SDK).
+EncFS читается байт-в-байт (имена+данные+MAC, chained-IV, многоблочные файлы);
+LUKS восстанавливает мастер-ключ, совпадающий с `cryptsetup --dump-master-key`
+(sha1/256/512, 256/512-бит). **Багов не найдено** — пути порта уже были корректны.
+
+**Остаётся не закрыто (ограничение среды, не порта):** TrueCrypt/VeraCrypt (нет CLI
+VeraCrypt в среде) и serpent/twofish-LUKS (`cryptsetup` падает — ядру недоступны
+dm-crypt модули; сами шифры покрыты KAT).
+
+**Суть (исходно).** Все прежние проверки крипто/ФС — это **round-trip**: код сам
+пишет и сам читает. Это доказывает **внутреннюю** согласованность, но **НЕ** interop с
+реальными данными.
 
 **Что именно не проверено:**
 - **EncFS**: тома, созданные настольным EncFS (шифрование имён + данных + MAC,

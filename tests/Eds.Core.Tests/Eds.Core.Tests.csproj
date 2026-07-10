@@ -13,4 +13,10 @@
     <ProjectReference Include="../../src/Eds.Core/Eds.Core.csproj" />
     <ProjectReference Include="../../src/Eds.Core.Containers/Eds.Core.Containers.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Real interop reference artifacts (created by desktop encfs / cryptsetup).
+         Copied next to the test assembly so tests resolve them via
+         AppContext.BaseDirectory. See fixtures/interop/MANIFEST.md. -->
+    <None Include="fixtures/**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

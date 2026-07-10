@@ -2,8 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application android:allowBackup="true" android:supportsRtl="true">
+        <!-- Foreground service that keeps EDS alive during long file operations. -->
+        <service
+            android:name="com.sovworks.edslite.net.EdsForegroundService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync" />
         <!-- SAF: exposes open EDS locations to other apps for read/write/create/delete. -->
         <provider
             android:name="com.sovworks.edslite.net.EdsDocumentsProvider"

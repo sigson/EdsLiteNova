@@ -21,6 +21,7 @@ public partial class VaultBrowserViewModel : ObservableObject
 {
     private readonly EdsAppController _app;
     private readonly IOperationNotifier _notifier;
+    private readonly IForegroundOperationService _foreground;
     private ILocation? _location;
     private IFileSystem? _fs;
     private IPath? _current;
@@ -44,10 +45,12 @@ public partial class VaultBrowserViewModel : ObservableObject
     [ObservableProperty] private bool _descending;
     [ObservableProperty] private bool _directoriesFirst = true;
 
-    public VaultBrowserViewModel(EdsAppController app, IOperationNotifier notifier)
+    public VaultBrowserViewModel(EdsAppController app, IOperationNotifier notifier,
+        IForegroundOperationService foreground)
     {
         _app = app;
         _notifier = notifier;
+        _foreground = foreground;
     }
 
     partial void OnLocationIdChanged(string value)
@@ -191,6 +194,7 @@ public partial class VaultBrowserViewModel : ObservableObject
     private async Task PasteAsync()
     {
         if (_current == null || !_app.ClipboardHasItems) return;
+        await using var scope = _foreground.Begin("EDS Lite", "Pasting…");
         _notifier.Show(1, "EDS Lite", "Pasting…");
         try
         {
@@ -217,6 +221,7 @@ public partial class VaultBrowserViewModel : ObservableObject
     private async Task ImportFileAsync()
     {
         if (_current == null) return;
+        await using var scope = _foreground.Begin("EDS Lite", "Importing…");
         _notifier.Show(2, "EDS Lite", "Importing…");
         try
         {

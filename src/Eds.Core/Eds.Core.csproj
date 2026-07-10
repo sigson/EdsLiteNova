@@ -7,6 +7,9 @@
   <ItemGroup>
     <!-- CRC32 for TrueCrypt/VeraCrypt header verification. -->
     <PackageReference Include="System.IO.Hashing" Version="9.0.0" />
+    <!-- EXIF / image metadata (same author as the Java `metadata-extractor` the
+         original app used). Reads from a decrypted stream; no native deps. -->
+    <PackageReference Include="MetadataExtractor" Version="2.8.1" />
   </ItemGroup>
   <!--
     Native library layout. Staged libs live under runtimes/<rid>/native/
