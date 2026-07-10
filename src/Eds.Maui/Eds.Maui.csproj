@@ -23,7 +23,7 @@
 
         # Linux / drawn desktop:
         dotnet build src/Eds.Maui/Eds.Maui.csproj -f net11.0 -p:EnableAvalonia=true
-        dotnet run   --project src/Eds.Maui/Eds.Maui.csproj -f net11.0 -p:EnableAvalonia=true
+        dotnet run   -project src/Eds.Maui/Eds.Maui.csproj -f net11.0 -p:EnableAvalonia=true
     -->
     <EnableAvalonia Condition="'$(EnableAvalonia)' == ''">false</EnableAvalonia>
     <TargetFrameworks Condition="'$(EnableAvalonia)' == 'true'">$(TargetFrameworks);net11.0</TargetFrameworks>
