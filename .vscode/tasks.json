@@ -1,0 +1,35 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-native",
+      "type": "shell",
+      "windows": {
+        "command": "pwsh",
+        "args": ["-File", "scripts/build-native.ps1", "-Tests"]
+      },
+      "linux":   { "command": "bash", "args": ["scripts/build-native.sh"], "options": { "env": { "EDS_TESTS": "1" } } },
+      "osx":     { "command": "bash", "args": ["scripts/build-native.sh"], "options": { "env": { "EDS_TESTS": "1" } } },
+      "problemMatcher": [],
+      "detail": "Build the edscrypto native library (and run its KAT) and stage it into runtimes/."
+    },
+    {
+      "label": "build-core",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "tests/Eds.Core.Tests/Eds.Core.Tests.csproj", "-c", "Debug"],
+      "dependsOn": ["build-native"],
+      "problemMatcher": "$msCompile",
+      "detail": "Build native first, then the platform-neutral .NET projects + tests."
+    },
+    {
+      "label": "test",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["test", "tests/Eds.Core.Tests/Eds.Core.Tests.csproj"],
+      "dependsOn": ["build-native"],
+      "problemMatcher": "$msCompile",
+      "detail": "Run the xUnit suite (crypto KATs, container round-trips, FAT)."
+    }
+  ]
+}

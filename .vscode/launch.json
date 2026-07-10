@@ -1,0 +1,40 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ConsoleHost: selftest",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-native",
+      "program": "${workspaceFolder}/src/Eds.ConsoleHost/bin/Debug/net10.0/Eds.ConsoleHost.dll",
+      "args": ["selftest"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "ConsoleHost: open container",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-native",
+      "program": "${workspaceFolder}/src/Eds.ConsoleHost/bin/Debug/net10.0/Eds.ConsoleHost.dll",
+      "args": ["open", "${input:containerPath}", "${input:password}"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "ConsoleHost: ls (mount FAT)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-native",
+      "program": "${workspaceFolder}/src/Eds.ConsoleHost/bin/Debug/net10.0/Eds.ConsoleHost.dll",
+      "args": ["ls", "${input:containerPath}", "${input:password}", "/"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    }
+  ],
+  "inputs": [
+    { "id": "containerPath", "type": "promptString", "description": "Path to a container file" },
+    { "id": "password", "type": "promptString", "description": "Container password", "password": true }
+  ]
+}

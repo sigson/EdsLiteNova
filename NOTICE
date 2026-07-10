@@ -1,0 +1,42 @@
+EDS Lite — .NET / MAUI port
+===========================
+
+This project is a port of "edslite" (Encrypted Data Store lite), an
+open-source file/container encryption application for Android, from Java +
+native C to C# (.NET 10) + .NET MAUI.
+
+Original work
+-------------
+edslite is developed by Sovworks and is licensed under the GNU General
+Public License, version 2 or later (GPLv2+). The original project provides the
+native cryptographic implementations (AES, Serpent, Twofish, GOST, RIPEMD-160,
+Whirlpool, and the XTS/CBC modes) and the container/filesystem logic that this
+port reproduces.
+
+The native algorithm cores in `native/vendor/` are copied essentially verbatim
+from the original project to preserve byte-for-byte data compatibility with
+existing containers; their original copyright and licensing are retained.
+
+This port
+---------
+The C# managed layer, the unified C-ABI shim (`native/src/edscrypto.c`,
+`native/include/edscrypto.h`), the .NET build tooling and the MAUI application
+in this repository are likewise licensed under GPLv2+ (see the LICENSE file), in
+accordance with the license of the original work.
+
+Third-party components carry their own licenses:
+  * AES (Brian Gladman implementation), Serpent, Twofish, GOST, RIPEMD-160 and
+    Whirlpool reference cores — as distributed with the original edslite.
+
+Trademark / cryptography notice
+-------------------------------
+This software includes cryptographic functionality. Distribution and use may be
+subject to export/import and use regulations in some jurisdictions. Users are
+responsible for compliance with applicable laws.
+
+Compatibility validation
+-------------------------
+The cryptographic primitives are verified byte-for-byte against published test
+vectors (AES FIPS-197; Twofish and Serpent official vectors; AES-XTS IEEE 1619;
+AES-CBC NIST SP 800-38A; RIPEMD-160/Whirlpool reference; PBKDF2 RFC 6070) via the
+native KAT harness and the managed xUnit suite.

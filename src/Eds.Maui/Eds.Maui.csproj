@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!--
+      Multi-targets the MAUI platforms. For debugging WITHOUT an Android
+      emulator, build/run the desktop head:
+        dotnet build -f net10.0-windows10.0.19041.0     (Windows)
+        dotnet build -f net10.0-maccatalyst             (macOS)
+      The crypto/container core is identical across heads, so you can set
+      breakpoints and step through the full pipeline on desktop.
+      The Android head hosts the SAF DocumentsProvider + notifications.
+    -->
+    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <RootNamespace>Eds.Maui</RootNamespace>
+    <ApplicationTitle>EDS Lite</ApplicationTitle>
+    <ApplicationId>com.sovworks.edslite.net</ApplicationId>
+    <ApplicationDisplayVersion>3.0.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- App icon + splash (generated into platform assets by the MAUI SDK). -->
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#2B6CB0" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#2B6CB0" BaseSize="128,128" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <PackageReference Include="CommunityToolkit.Maui" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Eds.Core/Eds.Core.csproj" />
+    <ProjectReference Include="../Eds.Core.Containers/Eds.Core.Containers.csproj" />
+  </ItemGroup>
+</Project>

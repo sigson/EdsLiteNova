@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Eds.Core.Containers</RootNamespace>
+    <AssemblyName>Eds.Core.Containers</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Eds.Core/Eds.Core.csproj" />
+  </ItemGroup>
+</Project>

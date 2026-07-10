@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Eds.Maui.ViewModels"
+             x:Class="Eds.Maui.Views.CreatePage"
+             x:DataType="vm:CreateViewModel"
+             Title="Create">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+            <Label Text="Create a new encrypted container" FontSize="18" FontAttributes="Bold" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Pick folder…" Command="{Binding PickFolderCommand}" />
+                <Label Text="or type a full path below" VerticalOptions="Center" FontSize="12" TextColor="#888" />
+            </HorizontalStackLayout>
+            <Entry Placeholder="Destination file path (e.g. /storage/.../vault.hc)" Text="{Binding FilePath}" />
+
+            <Entry Placeholder="Password" IsPassword="True" Text="{Binding Password}" />
+
+            <Label Text="Format" />
+            <Picker ItemsSource="{Binding Formats}" SelectedIndex="{Binding FormatIndex}" />
+            <Label Text="Cipher" />
+            <Picker ItemsSource="{Binding Ciphers}" SelectedIndex="{Binding CipherIndex}" />
+            <Label Text="Hash" />
+            <Picker ItemsSource="{Binding Hashes}" SelectedIndex="{Binding HashIndex}" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Size (MiB)" VerticalOptions="Center" />
+                <Entry Text="{Binding SizeMb}" Keyboard="Numeric" WidthRequest="90" />
+                <Label Text="PIM" VerticalOptions="Center" Margin="12,0,0,0" />
+                <Entry Text="{Binding Pim}" Keyboard="Numeric" WidthRequest="90" />
+            </HorizontalStackLayout>
+
+            <Button Text="Create" Command="{Binding CreateCommand}"
+                    IsEnabled="{Binding Busy, Converter={StaticResource Not}}" />
+            <ActivityIndicator IsRunning="{Binding Busy}" />
+            <Label Text="{Binding Status}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

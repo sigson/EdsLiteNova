@@ -1,0 +1,36 @@
+# Build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+native/build/
+src/Eds.Core/runtimes/*/native/*.so
+src/Eds.Core/runtimes/*/native/*.dll
+src/Eds.Core/runtimes/*/native/*.dylib
+
+# .NET
+*.user
+project.lock.json
+.vs/
+*.suo
+
+# MAUI / mobile
+*.binlog
+Platforms/Android/bin/
+Platforms/iOS/bin/
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile

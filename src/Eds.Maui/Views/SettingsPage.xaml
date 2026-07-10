@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Eds.Maui.ViewModels"
+             x:Class="Eds.Maui.Views.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             Title="Settings">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+            <Label Text="Program settings" FontSize="18" FontAttributes="Bold" />
+
+            <HorizontalStackLayout Spacing="8">
+                <CheckBox IsChecked="{Binding NeverSaveHistory}" />
+                <Label Text="Never save history (don't persist location secrets)" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="Auto-lock after (seconds, 0 = never)" VerticalOptions="Center" />
+                <Entry Text="{Binding AutoCloseSeconds}" Keyboard="Numeric" WidthRequest="100" />
+            </HorizontalStackLayout>
+
+            <BoxView HeightRequest="1" Color="#DDDDDD" Margin="0,6" />
+
+            <Button Text="🔒 Lock all now" Command="{Binding LockAllCommand}" />
+            <Button Text="Clear temporary decrypted files" Command="{Binding ClearTempCommand}" />
+
+            <Label Text="{Binding Status}" FontSize="12" TextColor="#666" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

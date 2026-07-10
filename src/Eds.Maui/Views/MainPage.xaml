@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Eds.Maui.ViewModels"
+             x:Class="Eds.Maui.Views.MainPage"
+             x:DataType="vm:MainViewModel"
+             Title="EDS Lite (.NET port)">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="14">
+
+            <Label Text="EDS Lite — .NET 10 / MAUI port"
+                   FontSize="20" FontAttributes="Bold" />
+
+            <Label Text="Crypto core self-test (managed → native):" FontAttributes="Bold" Margin="0,8,0,0"/>
+            <Button Text="Run self-test" Command="{Binding RunSelfTestCommand}" />
+
+            <BoxView HeightRequest="1" Color="#ddd" Margin="0,8" />
+
+            <Label Text="Open a TrueCrypt / VeraCrypt container:" FontAttributes="Bold" />
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Pick file…" Command="{Binding PickContainerCommand}" />
+                <Label Text="{Binding ContainerPath}" VerticalOptions="Center" LineBreakMode="MiddleTruncation" />
+            </HorizontalStackLayout>
+            <Entry Placeholder="Password" IsPassword="True" Text="{Binding Password}" />
+            <Button Text="Open" Command="{Binding OpenContainerCommand}" />
+            <ProgressBar Progress="{Binding ProgressFraction}" />
+            <ActivityIndicator IsRunning="{Binding Busy}" />
+
+            <BoxView HeightRequest="1" Color="#ddd" Margin="0,8" />
+
+            <Label Text="Output:" FontAttributes="Bold" />
+            <Frame BorderColor="#ccc" Padding="10">
+                <Label Text="{Binding Log}" FontFamily="Consolas" FontSize="13" />
+            </Frame>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:Eds.Maui.Views"
+       x:Class="Eds.Maui.AppShell"
+       Title="EDS Lite">
+    <TabBar>
+        <ShellContent Title="Locations"
+                      ContentTemplate="{DataTemplate views:LocationsPage}"
+                      Route="LocationsPage" />
+        <ShellContent Title="Create"
+                      ContentTemplate="{DataTemplate views:CreatePage}"
+                      Route="CreatePage" />
+        <ShellContent Title="Settings"
+                      ContentTemplate="{DataTemplate views:SettingsPage}"
+                      Route="SettingsPage" />
+        <ShellContent Title="Diagnostics"
+                      ContentTemplate="{DataTemplate views:MainPage}"
+                      Route="MainPage" />
+    </TabBar>
+</Shell>

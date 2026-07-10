@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Eds.Maui.ViewModels"
+             x:Class="Eds.Maui.Views.VaultBrowserPage"
+             x:DataType="vm:VaultBrowserViewModel"
+             Title="{Binding Title}">
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Padding="10" RowSpacing="6">
+
+        <!-- nav + top actions -->
+        <FlexLayout Grid.Row="0" Wrap="Wrap" AlignItems="Center" JustifyContent="Start">
+            <Button Text="⬆ Up" Command="{Binding UpCommand}" IsEnabled="{Binding CanGoUp}" Margin="0,0,6,0" />
+            <Button Text="✖ Close" Command="{Binding CloseCommand}" Margin="0,0,6,0" />
+            <Button Text="🔑 Password" Command="{Binding ChangePasswordCommand}"
+                    IsVisible="{Binding CanChangePassword}" Margin="0,0,6,0" />
+            <Button Text="💾 Save changes" Command="{Binding SaveEditCommand}"
+                    IsVisible="{Binding HasPendingEdit}" Margin="0,0,6,0" />
+        </FlexLayout>
+
+        <Label Grid.Row="1" Text="{Binding Breadcrumb}" FontAttributes="Bold" LineBreakMode="MiddleTruncation" />
+
+        <!-- sort + write toolbar -->
+        <FlexLayout Grid.Row="2" Wrap="Wrap" AlignItems="Center" JustifyContent="Start">
+            <Label Text="Sort:" VerticalOptions="Center" Margin="0,0,4,0" />
+            <Picker ItemsSource="{Binding SortFields}" SelectedIndex="{Binding SelectedSortIndex}" WidthRequest="120" />
+            <CheckBox IsChecked="{Binding Descending}" />
+            <Label Text="Desc" VerticalOptions="Center" Margin="0,0,10,0" />
+            <CheckBox IsChecked="{Binding DirectoriesFirst}" />
+            <Label Text="Dirs first" VerticalOptions="Center" Margin="0,0,10,0" />
+
+            <Entry Placeholder="New folder" Text="{Binding NewFolderName}" WidthRequest="140"
+                   IsVisible="{Binding Writable}" />
+            <Button Text="＋" Command="{Binding NewFolderCommand}" IsVisible="{Binding Writable}" Margin="2,0" />
+            <Button Text="⬇ Import" Command="{Binding ImportFileCommand}" IsVisible="{Binding Writable}" Margin="2,0" />
+            <Button Text="📋 Paste" Command="{Binding PasteCommand}" IsVisible="{Binding CanPaste}" Margin="2,0" />
+        </FlexLayout>
+
+        <CollectionView Grid.Row="3" ItemsSource="{Binding Items}" SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:FileEntry">
+                    <Grid Padding="8,8" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.OpenCommand}"
+                                CommandParameter="{Binding .}" />
+                        </Grid.GestureRecognizers>
+                        <Label Grid.Column="0" Text="{Binding Glyph}" FontSize="20" Margin="0,0,8,0" />
+                        <Label Grid.Column="1" Text="{Binding Name}" VerticalOptions="Center" LineBreakMode="MiddleTruncation" />
+                        <Label Grid.Column="2" Text="{Binding Detail}" VerticalOptions="Center"
+                               FontSize="12" TextColor="#888" Margin="0,0,6,0" />
+                        <Button Grid.Column="3" Text="⎘" FontSize="13" Padding="6,0"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.CopyCommand}"
+                                CommandParameter="{Binding .}" />
+                        <Button Grid.Column="4" Text="✂" FontSize="13" Padding="6,0"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.CutCommand}"
+                                CommandParameter="{Binding .}"
+                                IsVisible="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.Writable}" />
+                        <Button Grid.Column="5" Text="🗑" FontSize="13" Padding="6,0"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.DeleteCommand}"
+                                CommandParameter="{Binding .}"
+                                IsVisible="{Binding Source={RelativeSource AncestorType={x:Type CollectionView}}, Path=BindingContext.Writable}" />
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Label Grid.Row="4" Text="{Binding Status}" FontSize="12" TextColor="#666" />
+    </Grid>
+</ContentPage>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Eds.Maui.ViewModels"
+             x:Class="Eds.Maui.Views.OpenPage"
+             x:DataType="vm:OpenViewModel"
+             Title="Unlock">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+            <Label Text="{Binding Title}" FontSize="20" FontAttributes="Bold" />
+
+            <Entry Placeholder="Password" IsPassword="True" Text="{Binding Password}" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Label Text="PIM (VeraCrypt, 0 = default)" VerticalOptions="Center" />
+                <Entry Text="{Binding Pim}" Keyboard="Numeric" WidthRequest="90" />
+            </HorizontalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <CheckBox IsChecked="{Binding ReadOnly}" />
+                <Label Text="Open read-only" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+            <Button Text="Unlock" Command="{Binding OpenCommand}" IsEnabled="{Binding Busy, Converter={StaticResource Not}}" />
+
+            <ActivityIndicator IsRunning="{Binding Busy}" />
+            <Label Text="{Binding KdfInfo}" FontSize="12" TextColor="#888" />
+            <Label Text="{Binding Status}" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

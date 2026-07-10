@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Eds.Core</RootNamespace>
+    <AssemblyName>Eds.Core</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- CRC32 for TrueCrypt/VeraCrypt header verification. -->
+    <PackageReference Include="System.IO.Hashing" Version="9.0.0" />
+  </ItemGroup>
+  <!--
+    Native library layout. Staged libs live under runtimes/<rid>/native/
+    (produced by scripts/build-native.*). A single Content item:
+      * copies the lib FLAT into the output root (Link) so RID-less
+        `dotnet run`/`dotnet test` builds find it via the default resolver;
+      * packs it into the correct runtimes/<rid>/native/ path for NuGet.
+    The DllImportResolver additionally probes runtimes/<rid>/native explicitly,
+    so loading works whether the lib ends up flat or in the RID subfolder.
+      runtimes/win-x64/native/edscrypto.dll
+      runtimes/linux-x64/native/libedscrypto.so
+      runtimes/osx-arm64/native/libedscrypto.dylib
+      runtimes/android-arm64/native/libedscrypto.so   (etc.)
+  -->
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)/runtimes')">
+    <Content Include="runtimes/**/native/*.so;runtimes/**/native/*.dll;runtimes/**/native/*.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>%(Filename)%(Extension)</Link>
+      <Visible>false</Visible>
+      <Pack>true</Pack>
+      <PackagePath>runtimes/%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+    </Content>
+  </ItemGroup>
+</Project>

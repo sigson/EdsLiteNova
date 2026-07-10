@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  # ---- native library + KAT on all three desktop OSes -------------------
+  native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure + build (with KAT)
+        run: |
+          cmake -S native -B native/build -DEDS_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build native/build --config Release
+
+      - name: Run native KAT (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          KAT=$(find native/build -name 'kat_test*' -type f -perm -u+x | head -n1)
+          "$KAT"
+
+      - name: Run native KAT (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $kat = Get-ChildItem -Path native/build -Recurse -Filter 'kat_test*.exe' | Select-Object -First 1
+          & $kat.FullName
+
+  # ---- managed core + container/FAT tests -------------------------------
+  dotnet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Build native and stage into runtimes
+        run: EDS_TESTS=1 ./scripts/build-native.sh
+
+      # Build/test only the platform-neutral projects (the MAUI head needs
+      # workloads and is validated separately / by running a desktop head).
+      - name: Restore
+        run: |
+          dotnet restore src/Eds.Core/Eds.Core.csproj
+          dotnet restore src/Eds.Core.Containers/Eds.Core.Containers.csproj
+          dotnet restore src/Eds.ConsoleHost/Eds.ConsoleHost.csproj
+          dotnet restore tests/Eds.Core.Tests/Eds.Core.Tests.csproj
+
+      - name: Build
+        run: dotnet build --no-restore -c Release tests/Eds.Core.Tests/Eds.Core.Tests.csproj
+
+      - name: Test
+        run: dotnet test --no-build -c Release tests/Eds.Core.Tests/Eds.Core.Tests.csproj --logger "console;verbosity=detailed"
+
+      - name: Console self-test (managed -> native end to end)
+        run: dotnet run -c Release --project src/Eds.ConsoleHost -- selftest

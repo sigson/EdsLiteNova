@@ -1,0 +1,20 @@
+<Project>
+  <!--
+    Common MSBuild properties for the EDS Lite .NET port.
+    Targeting .NET 10. The core libraries are platform-neutral (net10.0);
+    only the MAUI app multi-targets platform TFMs.
+  -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Source-generated P/Invoke ([LibraryImport]) needs unsafe/allow. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Company>EDS Lite port contributors</Company>
+    <!-- GPLv2+ inherited from the original edslite project. -->
+    <PackageLicenseExpression>GPL-2.0-or-later</PackageLicenseExpression>
+  </PropertyGroup>
+</Project>
