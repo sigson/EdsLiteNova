@@ -43,9 +43,6 @@
          override with -p:MauiPackageVersion=VERSION if the preview bumps it. -->
     <MauiPackageVersion Condition="'$(TargetFramework)' == 'net11.0'">11.0.0-preview.5.26304.4</MauiPackageVersion>
     <MauiPackageVersion Condition="'$(MauiPackageVersion)' == ''">10.0.0</MauiPackageVersion>
-    <!-- Compile constant so MauiProgram can conditionally call UseAvaloniaApp().
-         Only defined for the plain net11.0 desktop (Avalonia-hosted) TFM. -->
-    <DefineConstants Condition="'$(TargetFramework)' == 'net11.0'">$(DefineConstants);AVALONIA_DESKTOP</DefineConstants>
     <OutputType>Exe</OutputType>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
@@ -77,14 +74,11 @@
 
   <!-- CommunityToolkit.Maui uses native MAUI handlers (FolderPicker/Popup) that the
        Avalonia backend doesn't map yet, and its 10.0.0 build declares a MAUI 9.x
-       constraint (NU1608). Keep it only on the *native* heads; the Avalonia (net11.0)
-       head compiles with WITHOUT_COMMUNITYTOOLKIT so MauiProgram skips it. -->
+       constraint (NU1608). Referenced only on the native heads; the Avalonia head's
+       code lives under Platforms/Avalonia and never touches the toolkit. -->
   <ItemGroup Condition="'$(TargetFramework)' != 'net11.0'">
     <PackageReference Include="CommunityToolkit.Maui" Version="10.0.0" />
   </ItemGroup>
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net11.0'">
-    <DefineConstants>$(DefineConstants);WITHOUT_COMMUNITYTOOLKIT</DefineConstants>
-  </PropertyGroup>
 
   <!-- Avalonia MAUI backend packages — ONLY for the net11.0 (Avalonia desktop)
        TFM. These packages target net11.0 exclusively, so they must never be added
@@ -106,5 +100,29 @@
   <ItemGroup>
     <ProjectReference Include="../Eds.Core/Eds.Core.csproj" />
     <ProjectReference Include="../Eds.Core.Containers/Eds.Core.Containers.csproj" />
+  </ItemGroup>
+
+  <!-- ===================== Head-specific source routing =====================
+       Platforms/Avalonia/** compiles ONLY on the net11.0 (Avalonia) head.
+       Platforms/Default/**  compiles on every OTHER head (native MAUI).
+
+       MAUI SingleProject only special-cases the folders it knows (Android, iOS,
+       MacCatalyst, Windows…). These custom folders are NOT excluded by the default
+       glob, so we must remove them first (unconditionally) and then re-include the
+       right one per TFM — otherwise the SDK's default items plus our Include produce
+       duplicate Compile items (NETSDK1022).
+
+       Result: the Avalonia-preview shims never compile into the native builds, and
+       the native MAUI/CommunityToolkit code never compiles into the Avalonia build.
+       No #if in shared code. -->
+  <ItemGroup>
+    <Compile Remove="Platforms/Avalonia/**/*.cs" />
+    <Compile Remove="Platforms/Default/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
+    <Compile Include="Platforms/Avalonia/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net11.0'">
+    <Compile Include="Platforms/Default/**/*.cs" />
   </ItemGroup>
 </Project>
