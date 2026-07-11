@@ -37,15 +37,25 @@ public static class MauiProgram
 
         // --- platform services -----------------------------------------
         builder.Services.AddSingleton<IExternalFileOpener, MauiExternalFileOpener>();
-        // Folder picker: CommunityToolkit on native heads, MAUI Essentials on Avalonia.
-#if WITHOUT_COMMUNITYTOOLKIT
+        // Folder/file pickers: real Avalonia IStorageProvider dialogs on the Avalonia
+        // head (Essentials pickers are stubs there); MAUI/CommunityToolkit on native.
+#if AVALONIA_DESKTOP
         builder.Services.AddSingleton<IFolderPicker, EssentialsFolderPicker>();
+        builder.Services.AddSingleton<IFilePickerService, AvaloniaFilePickerService>();
 #else
         builder.Services.AddSingleton<IFolderPicker, CommunityFolderPicker>();
+        builder.Services.AddSingleton<IFilePickerService, MauiFilePickerService>();
 #endif
         // Real secret-store-backed key (Android Keystore / iOS/macOS Keychain / Windows DPAPI).
         // Falls back to the insecure Preferences provider only if the store is unavailable.
+        // Protection key: SecureStorage (Keystore/Keychain/DPAPI) on native heads;
+        // on the Avalonia head the preview Essentials SecureStorage throws, so use a
+        // file-based provider (DPAPI on Windows, 0600 AES-GCM file on Linux/macOS).
+#if AVALONIA_DESKTOP
+        builder.Services.AddSingleton<IProtectionKeyProvider, FileProtectionKeyProvider>();
+#else
         builder.Services.AddSingleton<IProtectionKeyProvider, SecureStoreProtectionKeyProvider>();
+#endif
 #if ANDROID
         builder.Services.AddSingleton<IOperationNotifier, AndroidOperationNotifier>();
         builder.Services.AddSingleton<IForegroundOperationService, AndroidForegroundOperationService>();
@@ -56,7 +66,7 @@ public static class MauiProgram
 
         // --- application core (platform-independent) --------------------
         builder.Services.AddSingleton<ISettings>(_ =>
-            new JsonFileSettings(Path.Combine(FileSystem.AppDataDirectory, "eds-settings.json")));
+            new JsonFileSettings(Path.Combine(AppDataPaths.AppDataDir(), "eds-settings.json")));
         builder.Services.AddSingleton(sp => new EdsAppController(
             sp.GetRequiredService<ISettings>(),
             externalOpener: sp.GetRequiredService<IExternalFileOpener>()));

@@ -6,14 +6,25 @@ public readonly record struct FolderPickResult(string? Path)
     public bool IsSuccessful => !string.IsNullOrEmpty(Path);
 }
 
+/// <summary>Result of a file pick: local path + file name, or null if cancelled.</summary>
+public readonly record struct FilePickResult(string? Path, string? FileName)
+{
+    public bool IsSuccessful => !string.IsNullOrEmpty(Path);
+}
+
 /// <summary>
-/// Abstracts folder selection so the view-models don't depend on a specific picker.
-/// On the native MAUI heads this is backed by CommunityToolkit.Maui's FolderPicker;
-/// on the Avalonia/Linux head (net11.0, where CommunityToolkit.Maui isn't referenced)
-/// it uses the built-in MAUI Essentials folder picker. Keeps the VMs identical
-/// across heads.
+/// Abstracts file/folder selection so the view-models don't depend on a specific
+/// picker. On the native MAUI heads this is backed by MAUI Essentials /
+/// CommunityToolkit; on the Avalonia (net11.0) head those are reference-only stubs
+/// that throw, so it is backed by Avalonia's own IStorageProvider.
 /// </summary>
 public interface IFolderPicker
 {
     Task<FolderPickResult> PickAsync(CancellationToken ct = default);
+}
+
+/// <summary>Picks a single existing file.</summary>
+public interface IFilePickerService
+{
+    Task<FilePickResult> PickFileAsync(CancellationToken ct = default);
 }

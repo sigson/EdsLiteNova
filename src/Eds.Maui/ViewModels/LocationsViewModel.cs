@@ -17,15 +17,18 @@ public partial class LocationsViewModel : ObservableObject
 {
     private readonly EdsAppController _app;
     private readonly IFolderPicker _folderPicker;
+    private readonly IFilePickerService _filePicker;
 
     public ObservableCollection<LocationItem> Locations { get; } = new();
 
     [ObservableProperty] private string _status = "";
 
-    public LocationsViewModel(EdsAppController app, IFolderPicker folderPicker)
+    public LocationsViewModel(EdsAppController app, IFolderPicker folderPicker,
+        IFilePickerService filePicker)
     {
         _app = app;
         _folderPicker = folderPicker;
+        _filePicker = filePicker;
         _app.LoadStoredLocations(); // once (singleton VM)
         Refresh();
     }
@@ -44,9 +47,9 @@ public partial class LocationsViewModel : ObservableObject
     {
         try
         {
-            var picked = await FilePicker.Default.PickAsync();
-            if (picked == null) return;
-            _app.AddContainerLocation(picked.FullPath);
+            var picked = await _filePicker.PickFileAsync();
+            if (!picked.IsSuccessful || picked.Path == null) return;
+            _app.AddContainerLocation(picked.Path);
             Refresh();
         }
         catch (Exception ex) { Status = "Error: " + ex.Message; }

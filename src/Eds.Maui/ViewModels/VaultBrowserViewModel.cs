@@ -24,6 +24,7 @@ public partial class VaultBrowserViewModel : ObservableObject
     private readonly EdsAppController _app;
     private readonly IOperationNotifier _notifier;
     private readonly IForegroundOperationService _foreground;
+    private readonly IFilePickerService _filePicker;
     private ILocation? _location;
     private IFileSystem? _fs;
     private IPath? _current;
@@ -48,11 +49,12 @@ public partial class VaultBrowserViewModel : ObservableObject
     [ObservableProperty] private bool _directoriesFirst = true;
 
     public VaultBrowserViewModel(EdsAppController app, IOperationNotifier notifier,
-        IForegroundOperationService foreground)
+        IForegroundOperationService foreground, IFilePickerService filePicker)
     {
         _app = app;
         _notifier = notifier;
         _foreground = foreground;
+        _filePicker = filePicker;
     }
 
     partial void OnLocationIdChanged(string value)
@@ -227,10 +229,10 @@ public partial class VaultBrowserViewModel : ObservableObject
         _notifier.Show(2, "EDS Lite", "Importing…");
         try
         {
-            var picked = await FilePicker.Default.PickAsync();
-            if (picked == null) return;
-            await using var input = await picked.OpenReadAsync();
-            var target = _current.Combine(picked.FileName).GetFile();
+            var picked = await _filePicker.PickFileAsync();
+            if (!picked.IsSuccessful || picked.Path == null) return;
+            await using var input = File.OpenRead(picked.Path);
+            var target = _current.Combine(picked.FileName ?? Path.GetFileName(picked.Path)).GetFile();
             await using (var output = target.GetOutputStream())
                 await input.CopyToAsync(output);
             RefreshListing();

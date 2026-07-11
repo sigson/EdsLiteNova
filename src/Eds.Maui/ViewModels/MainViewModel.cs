@@ -18,6 +18,11 @@ namespace Eds.Maui.ViewModels;
 /// </summary>
 public partial class MainViewModel : ObservableObject
 {
+    private readonly Eds.Maui.Services.IFilePickerService _filePicker;
+
+    public MainViewModel(Eds.Maui.Services.IFilePickerService filePicker)
+        => _filePicker = filePicker;
+
     [ObservableProperty] private string _log = "";
     [ObservableProperty] private string _containerPath = "";
     [ObservableProperty] private string _password = "";
@@ -88,8 +93,15 @@ public partial class MainViewModel : ObservableObject
     [RelayCommand]
     private async Task PickContainerAsync()
     {
-        var result = await FilePicker.Default.PickAsync();
-        if (result != null) ContainerPath = result.FullPath;
+        try
+        {
+            var result = await _filePicker.PickFileAsync();
+            if (result.IsSuccessful && result.Path != null) ContainerPath = result.Path;
+        }
+        catch (Exception ex)
+        {
+            Log += $"File picker unavailable: {ex.Message}\nType the container path manually.\n";
+        }
     }
 
     [RelayCommand]
