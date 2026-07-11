@@ -1,35 +1,48 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!--
-      Multi-targets the MAUI platforms. For debugging WITHOUT an Android
-      emulator, build/run the desktop head:
-        dotnet build -f net10.0-windows10.0.19041.0     (Windows)
-        dotnet build -f net10.0-maccatalyst             (macOS)
-      The crypto/container core is identical across heads, so you can set
-      breakpoints and step through the full pipeline on desktop.
-      The Android head hosts the SAF DocumentsProvider + notifications.
+      Head selection. Each MAUI "head" is a TFM; the current OS + flags decide which
+      ones are built so a Linux box never tries to restore iOS/Android it can't.
+
+        AndroidHead=true   (default)  → net10.0-android      (needs maui-android workload)
+        EnableAvalonia=true           → net11.0 (Avalonia; Linux GUI, needs .NET 11)
+        BuildApplePlatforms=true      → net10.0-ios;-maccatalyst   (auto on macOS only)
+        (Windows host)                → net10.0-windows...
+        AvaloniaOnly=true             → ONLY net11.0 (no Android) — cleanest Linux GUI
+                                        build; doesn't need the Android workload.
+
+      Examples:
+        # Linux GUI only (recommended on Linux — single TFM, no Android workload):
+        dotnet build src/Eds.Maui/Eds.Maui.csproj -p:AvaloniaOnly=true
+        dotnet run   (with) -p:AvaloniaOnly=true
+        # Android:
+        dotnet build src/Eds.Maui/Eds.Maui.csproj -f net10.0-android
     -->
-    <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+    <AndroidHead Condition="'$(AndroidHead)' == ''">true</AndroidHead>
+    <!-- AvaloniaOnly implies EnableAvalonia and drops every other head. -->
+    <EnableAvalonia Condition="'$(AvaloniaOnly)' == 'true'">true</EnableAvalonia>
+    <AndroidHead Condition="'$(AvaloniaOnly)' == 'true'">false</AndroidHead>
 
-    <!--
-      Avalonia MAUI backend (Linux / WebAssembly / drawn desktop).
-      https://docs.avaloniaui.net/docs/migration/maui/  (Option 1)
-
-      MAUI has no Linux target, so on Linux the app runs through Avalonia's
-      renderer via the plain `net11.0` desktop TFM (no platform suffix). This is
-      opt-in via `-p:EnableAvalonia=true` because it requires the .NET 11 (preview)
-      SDK + MAUI 11 workload; the default net10.0 mobile/desktop build is unchanged.
-
-        # Linux / drawn desktop:
-        dotnet build src/Eds.Maui/Eds.Maui.csproj -f net11.0 -p:EnableAvalonia=true
-        dotnet run   -project src/Eds.Maui/Eds.Maui.csproj -f net11.0 -p:EnableAvalonia=true
-    -->
+    <TargetFrameworks></TargetFrameworks>
+    <TargetFrameworks Condition="'$(AndroidHead)' == 'true'">$(TargetFrameworks);net10.0-android</TargetFrameworks>
+    <BuildApplePlatforms Condition="'$(BuildApplePlatforms)' == '' and $([MSBuild]::IsOSPlatform('osx')) and '$(AvaloniaOnly)' != 'true'">true</BuildApplePlatforms>
+    <TargetFrameworks Condition="'$(BuildApplePlatforms)' == 'true'">$(TargetFrameworks);net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(AvaloniaOnly)' != 'true'">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
     <EnableAvalonia Condition="'$(EnableAvalonia)' == ''">false</EnableAvalonia>
     <TargetFrameworks Condition="'$(EnableAvalonia)' == 'true'">$(TargetFrameworks);net11.0</TargetFrameworks>
-    <!-- Pin to the current Avalonia MAUI preview you have restored. Versions float
-         per preview; check https://www.nuget.org/packages/Avalonia.Controls.Maui.Desktop -->
-    <AvaloniaMauiVersion Condition="'$(AvaloniaMauiVersion)' == ''">11.3.0-preview1</AvaloniaMauiVersion>
+    <!-- Trim any leading ';' produced when the first group was empty. -->
+    <TargetFrameworks>$(TargetFrameworks.TrimStart(';'))</TargetFrameworks>
+    <!-- Real published preview (NuGet: 8 versions, latest is this). Override with
+         -p:AvaloniaMauiVersion=VERSION when a newer preview lands. -->
+    <AvaloniaMauiVersion Condition="'$(AvaloniaMauiVersion)' == ''">11.0.0-preview.5.26167.1758</AvaloniaMauiVersion>
+    <!-- MAUI package version must line up with the framework of each head:
+         net11.0 (Avalonia) pulls MAUI 11.x (via Avalonia.Controls.Maui.*), so
+         Microsoft.Maui.Controls/Essentials must match it to avoid an NU1605
+         downgrade. Everything else uses the stable MAUI 10.
+         The 11.x value must equal what the restored Avalonia preview references —
+         override with -p:MauiPackageVersion=VERSION if the preview bumps it. -->
+    <MauiPackageVersion Condition="'$(TargetFramework)' == 'net11.0'">11.0.0-preview.5.26304.4</MauiPackageVersion>
+    <MauiPackageVersion Condition="'$(MauiPackageVersion)' == ''">10.0.0</MauiPackageVersion>
     <!-- Compile constant so MauiProgram can conditionally call UseAvaloniaApp().
          Only defined for the plain net11.0 desktop (Avalonia-hosted) TFM. -->
     <DefineConstants Condition="'$(TargetFramework)' == 'net11.0'">$(DefineConstants);AVALONIA_DESKTOP</DefineConstants>
@@ -54,28 +67,40 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.0" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiPackageVersion)" />
+    <!-- Direct Essentials ref, TFM-matched: resolves the CommunityToolkit vs MAUI 10
+         conflict on native heads (NU1107) and the MAUI 11 alignment on the Avalonia
+         head (NU1605). -->
+    <PackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiPackageVersion)" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
-    <PackageReference Include="CommunityToolkit.Maui" Version="10.0.0" />
   </ItemGroup>
 
-  <!-- Avalonia MAUI backend packages (only when EnableAvalonia=true). -->
-  <ItemGroup Condition="'$(EnableAvalonia)' == 'true'">
-    <!-- Handlers for the built-in MAUI controls (all Avalonia-hosted TFMs). -->
+  <!-- CommunityToolkit.Maui uses native MAUI handlers (FolderPicker/Popup) that the
+       Avalonia backend doesn't map yet, and its 10.0.0 build declares a MAUI 9.x
+       constraint (NU1608). Keep it only on the *native* heads; the Avalonia (net11.0)
+       head compiles with WITHOUT_COMMUNITYTOOLKIT so MauiProgram skips it. -->
+  <ItemGroup Condition="'$(TargetFramework)' != 'net11.0'">
+    <PackageReference Include="CommunityToolkit.Maui" Version="10.0.0" />
+  </ItemGroup>
+  <PropertyGroup Condition="'$(TargetFramework)' == 'net11.0'">
+    <DefineConstants>$(DefineConstants);WITHOUT_COMMUNITYTOOLKIT</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Avalonia MAUI backend packages — ONLY for the net11.0 (Avalonia desktop)
+       TFM. These packages target net11.0 exclusively, so they must never be added
+       to the net10.0-android/-windows heads (that caused NU1202). -->
+  <ItemGroup Condition="'$(EnableAvalonia)' == 'true' and '$(TargetFramework)' == 'net11.0'">
+    <!-- Handlers for the built-in MAUI controls. -->
     <PackageReference Include="Avalonia.Controls.Maui" Version="$(AvaloniaMauiVersion)" />
     <!-- Desktop metapackage: pulls in Avalonia.Desktop and *source-generates* the
-         Avalonia Application + bootstrap for the plain net11.0 (desktop) TFM, so no
-         manual Program.cs/AppBuilder is needed. Desktop TFM only. -->
-    <PackageReference Include="Avalonia.Controls.Maui.Desktop" Version="$(AvaloniaMauiVersion)"
-                      Condition="'$(TargetFramework)' == 'net11.0'" />
-    <!-- Handlers for deprecated controls (Frame/ListView/TableView) if you use them. -->
-    <PackageReference Include="Avalonia.Controls.Maui.Compatibility" Version="$(AvaloniaMauiVersion)" />
+         Avalonia Application + bootstrap for net11.0, so no manual Program.cs/
+         AppBuilder is needed. -->
+    <PackageReference Include="Avalonia.Controls.Maui.Desktop" Version="$(AvaloniaMauiVersion)" />
     <!-- Avalonia implementations of Microsoft.Maui.Essentials (SecureStorage,
          Preferences, FilePicker, Launcher, …) so the shared services resolve on
          the Linux/desktop Avalonia head. See STATUS-ESSENTIALS.md upstream for the
          current coverage — some APIs may be partial in preview. -->
-    <PackageReference Include="Avalonia.Controls.Maui.Essentials" Version="$(AvaloniaMauiVersion)"
-                      Condition="'$(TargetFramework)' == 'net11.0'" />
+    <PackageReference Include="Avalonia.Controls.Maui.Essentials" Version="$(AvaloniaMauiVersion)" />
   </ItemGroup>
 
   <ItemGroup>

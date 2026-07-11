@@ -5,6 +5,7 @@ using Android.Runtime;
 using Eds.Core.App;
 using Eds.Core.Fs.Util;
 using Eds.Core.Fs.Vfs;
+using IFileSystem = Eds.Core.Fs.Vfs.IFileSystem;
 using Eds.Maui.Services;
 
 namespace Eds.Maui.Platforms.Droid;

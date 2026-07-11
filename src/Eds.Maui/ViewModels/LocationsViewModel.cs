@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Eds.Core.App;
 using Eds.Core.Locations;
+using Eds.Maui.Services;
 
 namespace Eds.Maui.ViewModels;
 
@@ -16,14 +16,16 @@ namespace Eds.Maui.ViewModels;
 public partial class LocationsViewModel : ObservableObject
 {
     private readonly EdsAppController _app;
+    private readonly IFolderPicker _folderPicker;
 
     public ObservableCollection<LocationItem> Locations { get; } = new();
 
     [ObservableProperty] private string _status = "";
 
-    public LocationsViewModel(EdsAppController app)
+    public LocationsViewModel(EdsAppController app, IFolderPicker folderPicker)
     {
         _app = app;
+        _folderPicker = folderPicker;
         _app.LoadStoredLocations(); // once (singleton VM)
         Refresh();
     }
@@ -55,9 +57,9 @@ public partial class LocationsViewModel : ObservableObject
     {
         try
         {
-            var res = await FolderPicker.Default.PickAsync(CancellationToken.None);
-            if (!res.IsSuccessful || res.Folder?.Path == null) return;
-            _app.AddEncFsLocation(res.Folder.Path);
+            var res = await _folderPicker.PickAsync(CancellationToken.None);
+            if (!res.IsSuccessful || res.Path == null) return;
+            _app.AddEncFsLocation(res.Path);
             Refresh();
         }
         catch (Exception ex) { Status = "Error: " + ex.Message; }

@@ -1,4 +1,6 @@
+#if !WITHOUT_COMMUNITYTOOLKIT
 using CommunityToolkit.Maui;
+#endif
 using Eds.Core.App;
 using Eds.Core.Crypto.Native;
 using Eds.Core.Locations;
@@ -28,10 +30,19 @@ public static class MauiProgram
             // Avalonia.Controls.Maui.Desktop, so no manual AppBuilder is needed.
             .UseAvaloniaApp()
 #endif
-            .UseMauiCommunityToolkit();
+            ;
+#if !WITHOUT_COMMUNITYTOOLKIT
+        builder.UseMauiCommunityToolkit();
+#endif
 
         // --- platform services -----------------------------------------
         builder.Services.AddSingleton<IExternalFileOpener, MauiExternalFileOpener>();
+        // Folder picker: CommunityToolkit on native heads, MAUI Essentials on Avalonia.
+#if WITHOUT_COMMUNITYTOOLKIT
+        builder.Services.AddSingleton<IFolderPicker, EssentialsFolderPicker>();
+#else
+        builder.Services.AddSingleton<IFolderPicker, CommunityFolderPicker>();
+#endif
         // Real secret-store-backed key (Android Keystore / iOS/macOS Keychain / Windows DPAPI).
         // Falls back to the insecure Preferences provider only if the store is unavailable.
         builder.Services.AddSingleton<IProtectionKeyProvider, SecureStoreProtectionKeyProvider>();
@@ -72,7 +83,9 @@ public static class MauiProgram
         builder.Services.AddSingleton<MainViewModel>();
         builder.Services.AddSingleton<MainPage>();
 
-#if DEBUG
+#if DEBUG && !AVALONIA_DESKTOP
+        // AddDebug() comes from Microsoft.Extensions.Logging.Debug, which the native
+        // MAUI heads reference implicitly; the Avalonia (net11.0) head doesn't.
         builder.Logging.AddDebug();
 #endif
 

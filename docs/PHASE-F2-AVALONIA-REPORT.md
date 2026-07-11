@@ -78,7 +78,7 @@ scopes `Platforms/<p>/**` per TFM.
 
 - **Avalonia MAUI is preview** (GA targeted with .NET MAUI 11). Requires the .NET 11
   preview SDK + MAUI 11 workload. Pin `$(AvaloniaMauiVersion)` to the preview you
-  restore (default `11.3.0-preview1` is a placeholder — check NuGet).
+  restore (default is `11.0.0-preview.5.26167.1758`, the latest published preview; override with -p:AvaloniaMauiVersion=<v>).
 - **Essentials coverage is partial in preview** — `SecureStorage`/`FilePicker`/
   `Launcher`/`FolderPicker` may be incomplete on Linux. The key provider already
   degrades gracefully; file/folder pickers in the VMs may need a desktop fallback if

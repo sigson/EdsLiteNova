@@ -1,9 +1,9 @@
-using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Eds.Core.App;
 using Eds.Core.Containers;
 using Eds.Core.Crypto;
+using Eds.Maui.Services;
 
 namespace Eds.Maui.ViewModels;
 
@@ -16,6 +16,7 @@ namespace Eds.Maui.ViewModels;
 public partial class CreateViewModel : ObservableObject
 {
     private readonly EdsAppController _app;
+    private readonly IFolderPicker _folderPicker;
 
     public string[] Formats { get; } = { "VeraCrypt", "TrueCrypt", "LUKS1" };
     public string[] Ciphers { get; } = { "AES", "Serpent", "Twofish" };
@@ -31,15 +32,19 @@ public partial class CreateViewModel : ObservableObject
     [ObservableProperty] private bool _busy;
     [ObservableProperty] private string _status = "";
 
-    public CreateViewModel(EdsAppController app) => _app = app;
+    public CreateViewModel(EdsAppController app, IFolderPicker folderPicker)
+    {
+        _app = app;
+        _folderPicker = folderPicker;
+    }
 
     [RelayCommand]
     private async Task PickFolderAsync()
     {
         try
         {
-            var res = await FolderPicker.Default.PickAsync(CancellationToken.None);
-            if (res.IsSuccessful && res.Folder?.Path is { } dir)
+            var res = await _folderPicker.PickAsync(CancellationToken.None);
+            if (res.IsSuccessful && res.Path is { } dir)
                 FilePath = Path.Combine(dir, "new-volume.hc");
         }
         catch (Exception ex) { Status = "Error: " + ex.Message; }

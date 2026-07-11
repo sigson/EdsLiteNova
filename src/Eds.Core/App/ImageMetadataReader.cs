@@ -1,5 +1,6 @@
 using System.Text;
-using Eds.Core.Fs;
+using Eds.Core.Fs.Util;
+using Eds.Core.Fs.Vfs;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
 
@@ -27,7 +28,8 @@ public static class ImageMetadataReader
 
     public static bool IsImage(IPath path)
     {
-        string name = path.GetPathUtil().GetFileName();
+        // IPath exposes PathString (GetPathUtil() lives on the PathBase impl, not the interface).
+        string name = new StringPathUtil(path.PathString).GetFileName();
         int dot = name.LastIndexOf('.');
         return dot >= 0 && SupportedExtensions.Contains(name[dot..]);
     }

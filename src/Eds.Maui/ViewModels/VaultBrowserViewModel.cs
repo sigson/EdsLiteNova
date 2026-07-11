@@ -7,6 +7,8 @@ using Eds.Core.Fs.Vfs;
 using Eds.Core.Locations;
 using Eds.Core.Services;
 using Eds.Maui.Services;
+// Disambiguate: MAUI's implicit global using pulls in Microsoft.Maui.Storage.IFileSystem.
+using IFileSystem = Eds.Core.Fs.Vfs.IFileSystem;
 
 namespace Eds.Maui.ViewModels;
 
