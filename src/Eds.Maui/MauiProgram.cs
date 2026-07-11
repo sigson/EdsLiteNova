@@ -12,19 +12,21 @@ namespace Eds.Maui;
 /// <summary>
 /// App composition root. Platform-neutral wiring lives here; anything that differs
 /// between the native MAUI heads and the Avalonia (Linux/desktop) head is provided
-/// by <see cref="RegisterPlatformServices"/>, a partial method implemented once per
-/// head under <c>Platforms/Default</c> (native) and <c>Platforms/Avalonia</c>
-/// (net11.0). This keeps the shared file free of <c>#if</c> and keeps the Avalonia
-/// preview shims from touching the native builds.
+/// by <c>RegisterPlatformServices</c>, defined once per head under
+/// <c>Heads/Native</c> (native) and <c>Heads/Avalonia</c> (net11.0). Only
+/// one of those compiles per TFM (csproj routing), so it is a single plain method —
+/// not a partial method (whose call would silently no-op if unpaired). This keeps
+/// the shared file free of <c>#if</c> and keeps the Avalonia preview shims out of
+/// the native builds.
 /// </summary>
 public static partial class MauiProgram
 {
-    /// <summary>
-    /// Implemented per head. Registers: the MAUI-vs-Avalonia app host, file/folder
-    /// pickers, protection-key provider, operation notifier + foreground service,
-    /// external file opener, and (native only) logging/toolkit init.
-    /// </summary>
-    static partial void RegisterPlatformServices(MauiAppBuilder builder);
+    // RegisterPlatformServices is defined exactly once per head:
+    //   Heads/Native/NativeHead.cs   (native MAUI)
+    //   Heads/Avalonia/AvaloniaHead.cs (net11.0)
+    // Only one of those files compiles for a given TFM (see csproj routing), so this
+    // is a normal method with a single definition — not a partial method (whose call
+    // would silently no-op if the implementing part were ever excluded).
 
     public static MauiApp CreateMauiApp()
     {

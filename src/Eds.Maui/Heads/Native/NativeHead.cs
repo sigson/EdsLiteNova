@@ -1,7 +1,7 @@
 using CommunityToolkit.Maui;
 using Eds.Core.Locations;
 using Eds.Core.Services;
-using Eds.Maui.Platforms.Default;
+using Eds.Maui.Heads.Native;
 using Eds.Maui.Services;
 using Microsoft.Extensions.Logging;
 
@@ -15,7 +15,7 @@ namespace Eds.Maui;
 /// </summary>
 public static partial class MauiProgram
 {
-    static partial void RegisterPlatformServices(MauiAppBuilder builder)
+    internal static void RegisterPlatformServices(MauiAppBuilder builder)
     {
         builder.UseMauiCommunityToolkit();
 

@@ -103,26 +103,22 @@
   </ItemGroup>
 
   <!-- ===================== Head-specific source routing =====================
-       Platforms/Avalonia/** compiles ONLY on the net11.0 (Avalonia) head.
-       Platforms/Default/**  compiles on every OTHER head (native MAUI).
+       Heads/Avalonia/** compiles ONLY on the net11.0 (Avalonia) head.
+       Heads/Native/**   compiles on every OTHER head (native MAUI).
 
-       MAUI SingleProject only special-cases the folders it knows (Android, iOS,
-       MacCatalyst, Windows…). These custom folders are NOT excluded by the default
-       glob, so we must remove them first (unconditionally) and then re-include the
-       right one per TFM — otherwise the SDK's default items plus our Include produce
-       duplicate Compile items (NETSDK1022).
-
-       Result: the Avalonia-preview shims never compile into the native builds, and
-       the native MAUI/CommunityToolkit code never compiles into the Avalonia build.
-       No #if in shared code. -->
+       These live under Heads/ (NOT Platforms/) on purpose: MAUI SingleProject
+       filters Platforms/** by the current platform and would drop a custom subfolder
+       like Platforms/Avalonia on the net11.0 head. Heads/ is a normal folder, so the
+       default Compile glob picks both up — we remove both, then re-include one per
+       TFM. Keeps Avalonia-preview shims out of native builds and vice-versa; no #if. -->
   <ItemGroup>
-    <Compile Remove="Platforms/Avalonia/**/*.cs" />
-    <Compile Remove="Platforms/Default/**/*.cs" />
+    <Compile Remove="Heads/Avalonia/**/*.cs" />
+    <Compile Remove="Heads/Native/**/*.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net11.0'">
-    <Compile Include="Platforms/Avalonia/**/*.cs" />
+    <Compile Include="Heads/Avalonia/**/*.cs" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' != 'net11.0'">
-    <Compile Include="Platforms/Default/**/*.cs" />
+    <Compile Include="Heads/Native/**/*.cs" />
   </ItemGroup>
 </Project>

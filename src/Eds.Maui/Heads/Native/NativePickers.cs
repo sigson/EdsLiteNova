@@ -1,7 +1,7 @@
 using CommunityToolkit.Maui.Storage;
 using Eds.Maui.Services;
 
-namespace Eds.Maui.Platforms.Default;
+namespace Eds.Maui.Heads.Native;
 
 /// <summary>Native MAUI heads: CommunityToolkit.Maui's folder picker.</summary>
 public sealed class CommunityFolderPicker : IFolderPicker

@@ -7,7 +7,7 @@ public static partial class AppDataPaths
 {
     // XDG on Linux, %AppData% on Windows, Application Support on macOS. Never throws
     // (the preview Essentials FileSystem.AppDataDirectory does).
-    static partial void PlatformAppDataDir(ref string dir)
+    public static string AppDataDir()
     {
         string baseDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
         if (string.IsNullOrEmpty(baseDir))
@@ -19,8 +19,8 @@ public static partial class AppDataPaths
                     Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
                     ".local", "share");
         }
-        string d = Path.Combine(baseDir, "EdsLite");
-        Directory.CreateDirectory(d);
-        dir = d;
+        string dir = Path.Combine(baseDir, "EdsLite");
+        Directory.CreateDirectory(dir);
+        return dir;
     }
 }

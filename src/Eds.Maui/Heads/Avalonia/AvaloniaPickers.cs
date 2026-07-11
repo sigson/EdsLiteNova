@@ -1,10 +1,9 @@
 using System.Linq;
-using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Platform.Storage;
 using Eds.Maui.Services;
 
-namespace Eds.Maui.Platforms.Avalonia;
+namespace Eds.Maui.Heads.Avalonia;
 
 /// <summary>Locates Avalonia's <see cref="IStorageProvider"/> from the desktop window.</summary>
 internal static class AvaloniaStorage
@@ -13,7 +12,12 @@ internal static class AvaloniaStorage
     {
         get
         {
-            if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            // Fully qualified: `Application` is ambiguous (Avalonia.Application vs
+            // Microsoft.Maui.Controls.Application, which MAUI adds as a global using),
+            // and a bare `Avalonia.` prefix would collide with this file's own
+            // Eds.Maui.Heads.Avalonia namespace.
+            if (global::Avalonia.Application.Current?.ApplicationLifetime
+                    is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 var w = desktop.MainWindow ?? desktop.Windows.FirstOrDefault();
                 return w?.StorageProvider;

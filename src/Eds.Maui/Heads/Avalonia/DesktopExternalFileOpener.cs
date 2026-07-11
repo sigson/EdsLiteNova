@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Eds.Core.Services;
 
-namespace Eds.Maui.Platforms.Avalonia;
+namespace Eds.Maui.Heads.Avalonia;
 
 /// <summary>
 /// Opens the decrypted temp file with the OS default handler on desktop
